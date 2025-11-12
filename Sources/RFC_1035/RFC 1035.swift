@@ -34,7 +34,9 @@ public struct Domain: Hashable, Sendable {
 
     /// Initialize from a string representation (e.g. "example.com")
     public init(_ string: String) throws {
-        try self.init(labels: string.split(separator: ".", omittingEmptySubsequences: true).map(String.init))
+        try self.init(
+            labels: string.split(separator: ".", omittingEmptySubsequences: true).map(String.init)
+        )
     }
 }
 
@@ -136,7 +138,8 @@ extension Domain {
             case .tooManyLabels:
                 return "Domain name has too many labels (maximum \(Limits.maxLabels))"
             case .invalidLabel(let label):
-                return "Invalid label '\(label)'. Must start with letter, end with letter/digit, and contain only letters/digits/hyphens"
+                return
+                    "Invalid label '\(label)'. Must start with letter, end with letter/digit, and contain only letters/digits/hyphens"
             }
         }
     }
