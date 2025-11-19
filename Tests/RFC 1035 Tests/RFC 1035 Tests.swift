@@ -8,49 +8,49 @@
 import RFC_1035
 import Testing
 
-@Suite("RFC 1035 Domain Tests")
-struct RFC1035Tests {
-    @Test("Successfully creates valid domain")
-    func testValidDomain() throws {
+@Suite
+struct `RFC 1035 Domain Tests` {
+    @Test
+    func `Successfully creates valid domain`() throws {
         let domain = try Domain("example.com")
         #expect(domain.name == "example.com")
     }
 
-    @Test("Successfully creates subdomain")
-    func testValidSubdomain() throws {
+    @Test
+    func `Successfully creates subdomain`() throws {
         let domain = try Domain("sub.example.com")
         #expect(domain.name == "sub.example.com")
     }
 
-    @Test("Successfully gets TLD")
-    func testTLD() throws {
+    @Test
+    func `Successfully gets TLD`() throws {
         let domain = try Domain("example.com")
         #expect(domain.tld?.stringValue == "com")
     }
 
-    @Test("Successfully gets SLD")
-    func testSLD() throws {
+    @Test
+    func `Successfully gets SLD`() throws {
         let domain = try Domain("example.com")
         #expect(domain.sld?.stringValue == "example")
     }
 
-    @Test("Fails with empty domain")
-    func testEmptyDomain() throws {
+    @Test
+    func `Fails with empty domain`() throws {
         #expect(throws: Domain.ValidationError.empty) {
             _ = try Domain("")
         }
     }
 
-    @Test("Fails with too many labels")
-    func testTooManyLabels() throws {
+    @Test
+    func `Fails with too many labels`() throws {
         let longDomain = Array(repeating: "a", count: 128).joined(separator: ".")
         #expect(throws: Domain.ValidationError.tooManyLabels) {
             _ = try Domain(longDomain)
         }
     }
 
-    @Test("Fails with too long domain")
-    func testTooLongDomain() throws {
+    @Test
+    func `Fails with too long domain`() throws {
         let longLabel = String(repeating: "a", count: 63)
         let longDomain = Array(repeating: longLabel, count: 5).joined(separator: ".")
         #expect(throws: Domain.ValidationError.tooLong(319)) {
@@ -58,62 +58,62 @@ struct RFC1035Tests {
         }
     }
 
-    @Test("Fails with invalid label starting with hyphen")
-    func testInvalidLabelStartingWithHyphen() throws {
+    @Test
+    func `Fails with invalid label starting with hyphen`() throws {
         #expect(throws: Domain.ValidationError.invalidLabel("-example")) {
             _ = try Domain("-example.com")
         }
     }
 
-    @Test("Fails with invalid label ending with hyphen")
-    func testInvalidLabelEndingWithHyphen() throws {
+    @Test
+    func `Fails with invalid label ending with hyphen`() throws {
         #expect(throws: Domain.ValidationError.invalidLabel("example-")) {
             _ = try Domain("example-.com")
         }
     }
 
-    @Test("Successfully detects subdomain relationship")
-    func testIsSubdomain() throws {
+    @Test
+    func `Successfully detects subdomain relationship`() throws {
         let parent = try Domain("example.com")
         let child = try Domain("sub.example.com")
         #expect(child.isSubdomain(of: parent))
     }
 
-    @Test("Successfully adds subdomain")
-    func testAddSubdomain() throws {
+    @Test
+    func `Successfully adds subdomain`() throws {
         let domain = try Domain("example.com")
         let subdomain = try domain.addingSubdomain("sub")
         #expect(subdomain.name == "sub.example.com")
     }
 
-    @Test("Successfully gets parent domain")
-    func testParentDomain() throws {
+    @Test
+    func `Successfully gets parent domain`() throws {
         let domain = try Domain("sub.example.com")
         let parent = try domain.parent()
         #expect(parent?.name == "example.com")
     }
 
-    @Test("Successfully gets root domain")
-    func testRootDomain() throws {
+    @Test
+    func `Successfully gets root domain`() throws {
         let domain = try Domain("sub.example.com")
         let root = try domain.root()
         #expect(root?.name == "example.com")
     }
 
-    @Test("Successfully creates domain from root components")
-    func testRootInitializer() throws {
+    @Test
+    func `Successfully creates domain from root components`() throws {
         let domain = try Domain.root("example", "com")
         #expect(domain.name == "example.com")
     }
 
-    @Test("Successfully creates domain from subdomain components")
-    func testSubdomainInitializer() throws {
+    @Test
+    func `Successfully creates domain from subdomain components`() throws {
         let domain = try Domain.subdomain("com", "example", "sub")
         #expect(domain.name == "sub.example.com")
     }
 
-    @Test("Successfully encodes and decodes")
-    func testCodable() throws {
+    @Test
+    func `Successfully encodes and decodes`() throws {
         let original = try Domain("example.com")
         let encoded = try JSONEncoder().encode(original)
         let decoded = try JSONDecoder().decode(Domain.self, from: encoded)

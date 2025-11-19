@@ -9,32 +9,32 @@ import RFC_1035
 import Testing
 import Foundation
 
-@Suite("README Verification")
-struct ReadmeVerificationTests {
+@Suite
+struct `README Verification` {
 
-    @Test("README Line 51-52: Create from string")
-    func createFromString() throws {
+    @Test
+    func `README Line 51-52: Create from string`() throws {
         let domain = try Domain("example.com")
 
         #expect(domain.name == "example.com")
     }
 
-    @Test("README Line 54-55: Create from root components")
-    func createFromRootComponents() throws {
+    @Test
+    func `README Line 54-55: Create from root components`() throws {
         let domain = try Domain.root("example", "com")
 
         #expect(domain.name == "example.com")
     }
 
-    @Test("README Line 57-59: Create subdomain with reversed components")
-    func createSubdomainReversed() throws {
+    @Test
+    func `README Line 57-59: Create subdomain with reversed components`() throws {
         let domain = try Domain.subdomain("com", "example", "api")
 
         #expect(domain.name == "api.example.com")
     }
 
-    @Test("README Line 65-72: Working with domain components")
-    func workingWithComponents() throws {
+    @Test
+    func `README Line 65-72: Working with domain components`() throws {
         let domain = try Domain("api.example.com")
 
         #expect(domain.tld?.stringValue == "com")
@@ -42,8 +42,8 @@ struct ReadmeVerificationTests {
         #expect(domain.name == "api.example.com")
     }
 
-    @Test("README Line 78-95: Domain hierarchy navigation")
-    func domainHierarchyNavigation() throws {
+    @Test
+    func `README Line 78-95: Domain hierarchy navigation`() throws {
         let domain = try Domain("api.v1.example.com")
 
         // Get parent domain
@@ -64,8 +64,8 @@ struct ReadmeVerificationTests {
         #expect(childDomain.isSubdomain(of: parentDomain))
     }
 
-    @Test("README Line 136-146: Error handling")
-    func errorHandling() throws {
+    @Test
+    func `README Line 136-146: Error handling`() throws {
         // Empty domain
         #expect(throws: Domain.ValidationError.empty) {
             _ = try Domain("")
@@ -77,8 +77,8 @@ struct ReadmeVerificationTests {
         }
     }
 
-    @Test("README Line 151-158: Codable support")
-    func codableSupport() throws {
+    @Test
+    func `README Line 151-158: Codable support`() throws {
         let domain = try Domain("example.com")
 
         // Encode to JSON
