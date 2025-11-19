@@ -1,6 +1,5 @@
 // swift-tools-version:6.0
 
-import Foundation
 import PackageDescription
 
 extension String {
@@ -14,15 +13,16 @@ extension Target.Dependency {
 let package = Package(
     name: "swift-rfc-1035",
     platforms: [
-        .macOS(.v13),
-        .iOS(.v16)
+        .macOS(.v15),
+        .iOS(.v18),
+        .tvOS(.v18),
+        .watchOS(.v11)
     ],
     products: [
         .library(name: .rfc1035, targets: [.rfc1035]),
     ],
     dependencies: [
-        // Add RFC dependencies here as needed
-        // .package(url: "https://github.com/swift-standards/swift-rfc-1123.git", branch: "main"),
+//         .package(url: "https://github.com/swift-standards/swift-standards.git", from: "0.1.0")
     ],
     targets: [
         .target(

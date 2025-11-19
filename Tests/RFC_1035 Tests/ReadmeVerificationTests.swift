@@ -5,9 +5,9 @@
 //  Verifies that README code examples actually work
 //
 
-import Foundation
 import RFC_1035
 import Testing
+import Foundation
 
 @Suite("README Verification")
 struct ReadmeVerificationTests {

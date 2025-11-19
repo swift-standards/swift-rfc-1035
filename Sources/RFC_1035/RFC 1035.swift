@@ -5,8 +5,6 @@
 //  Created by Coen ten Thije Boonkkamp on 28/12/2024.
 //
 
-import Foundation
-
 /// RFC 1035 compliant domain name
 public struct Domain: Hashable, Sendable {
     /// The labels that make up the domain name, from least significant to most significant
@@ -43,7 +41,7 @@ public struct Domain: Hashable, Sendable {
 extension Domain {
     /// A type-safe domain label that enforces RFC 1035 rules
     public struct Label: Hashable, Sendable {
-        private let value: String
+        public let value: String
 
         /// Initialize a label, validating RFC 1035 rules
         internal init(_ string: String) throws {
@@ -57,15 +55,13 @@ extension Domain {
 
             self.value = string
         }
-
-        public var stringValue: String { value }
     }
 }
 
 extension Domain {
     /// The complete domain name as a string
     public var name: String {
-        labels.map(\.stringValue).joined(separator: ".")
+        labels.map(String.init).joined(separator: ".")
     }
 
     /// The top-level domain (rightmost label)
@@ -86,7 +82,7 @@ extension Domain {
 
     /// Creates a subdomain by prepending new labels
     public func addingSubdomain(_ components: [String]) throws -> Domain {
-        try Domain(labels: components + labels.map(\.stringValue))
+        try Domain(labels: components + labels.map(String.init))
     }
 
     public func addingSubdomain(_ components: String...) throws -> Domain {
@@ -96,13 +92,13 @@ extension Domain {
     /// Returns the parent domain by removing the leftmost label
     public func parent() throws -> Domain? {
         guard labels.count > 1 else { return nil }
-        return try Domain(labels: labels.dropFirst().map(\.stringValue))
+        return try Domain(labels: labels.dropFirst().map(String.init))
     }
 
     /// Returns the root domain (tld + sld)
     public func root() throws -> Domain? {
         guard labels.count >= 2 else { return nil }
-        return try Domain(labels: labels.suffix(2).map(\.stringValue))
+        return try Domain(labels: labels.suffix(2).map(String.init))
     }
 }
 
@@ -123,25 +119,11 @@ extension Domain {
 
 // MARK: - Errors
 extension Domain {
-    public enum ValidationError: Error, LocalizedError, Equatable {
+    public enum ValidationError: Error, Equatable {
         case empty
         case tooLong(_ length: Int)
         case tooManyLabels
         case invalidLabel(_ label: String)
-
-        public var errorDescription: String? {
-            switch self {
-            case .empty:
-                return "Domain name cannot be empty"
-            case .tooLong(let length):
-                return "Domain name length \(length) exceeds maximum of \(Limits.maxLength)"
-            case .tooManyLabels:
-                return "Domain name has too many labels (maximum \(Limits.maxLabels))"
-            case .invalidLabel(let label):
-                return
-                    "Invalid label '\(label)'. Must start with letter, end with letter/digit, and contain only letters/digits/hyphens"
-            }
-        }
     }
 }
 
