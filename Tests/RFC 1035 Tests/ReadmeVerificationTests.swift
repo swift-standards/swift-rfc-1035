@@ -14,37 +14,37 @@ struct `README Verification` {
 
     @Test
     func `README Line 51-52: Create from string`() throws {
-        let domain = try Domain("example.com")
+        let domain = try RFC_1035.Domain("example.com")
 
         #expect(domain.name == "example.com")
     }
 
     @Test
     func `README Line 54-55: Create from root components`() throws {
-        let domain = try Domain.root("example", "com")
+        let domain = try RFC_1035.Domain.root("example", "com")
 
         #expect(domain.name == "example.com")
     }
 
     @Test
     func `README Line 57-59: Create subdomain with reversed components`() throws {
-        let domain = try Domain.subdomain("com", "example", "api")
+        let domain = try RFC_1035.Domain.subdomain("com", "example", "api")
 
         #expect(domain.name == "api.example.com")
     }
 
     @Test
     func `README Line 65-72: Working with domain components`() throws {
-        let domain = try Domain("api.example.com")
+        let domain = try RFC_1035.Domain("api.example.com")
 
-        #expect(domain.tld?.stringValue == "com")
-        #expect(domain.sld?.stringValue == "example")
+        #expect(domain.tld?.value == "com")
+        #expect(domain.sld?.value == "example")
         #expect(domain.name == "api.example.com")
     }
 
     @Test
     func `README Line 78-95: Domain hierarchy navigation`() throws {
-        let domain = try Domain("api.v1.example.com")
+        let domain = try RFC_1035.Domain("api.v1.example.com")
 
         // Get parent domain
         let parent = try domain.parent()
@@ -59,33 +59,33 @@ struct `README Verification` {
         #expect(subdomain.name == "staging.api.v1.example.com")
 
         // Check subdomain relationships
-        let parentDomain = try Domain("example.com")
-        let childDomain = try Domain("api.example.com")
+        let parentDomain = try RFC_1035.Domain("example.com")
+        let childDomain = try RFC_1035.Domain("api.example.com")
         #expect(childDomain.isSubdomain(of: parentDomain))
     }
 
     @Test
     func `README Line 136-146: Error handling`() throws {
         // Empty domain
-        #expect(throws: Domain.ValidationError.empty) {
-            _ = try Domain("")
+        #expect(throws: RFC_1035.Domain.Error.empty) {
+            _ = try RFC_1035.Domain("")
         }
 
         // Invalid label
-        #expect(throws: Domain.ValidationError.invalidLabel("-example")) {
-            _ = try Domain("-example.com")
+        #expect(throws: RFC_1035.Domain.Error.invalidLabel(.startsWithHyphen("-example"))) {
+            _ = try RFC_1035.Domain("-example.com")
         }
     }
 
     @Test
     func `README Line 151-158: Codable support`() throws {
-        let domain = try Domain("example.com")
+        let domain = try RFC_1035.Domain("example.com")
 
         // Encode to JSON
         let encoded = try JSONEncoder().encode(domain)
 
         // Decode from JSON
-        let decoded = try JSONDecoder().decode(Domain.self, from: encoded)
+        let decoded = try JSONDecoder().decode(RFC_1035.Domain.self, from: encoded)
 
         #expect(domain == decoded)
     }

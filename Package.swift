@@ -8,6 +8,8 @@ extension String {
 
 extension Target.Dependency {
     static var rfc1035: Self { .target(name: .rfc1035) }
+    static var standards: Self { .product(name: "Standards", package: "swift-standards") }
+    static var incits41986: Self { .product(name: "INCITS 4 1986", package: "swift-incits-4-1986") }
 }
 
 let package = Package(
@@ -22,13 +24,15 @@ let package = Package(
         .library(name: .rfc1035, targets: [.rfc1035]),
     ],
     dependencies: [
-//         .package(url: "https://github.com/swift-standards/swift-standards.git", from: "0.1.0")
+        .package(url: "https://github.com/swift-standards/swift-standards.git", from: "0.1.0"),
+        .package(url: "https://github.com/swift-standards/swift-incits-4-1986.git", from: "0.1.0"),
     ],
     targets: [
         .target(
             name: .rfc1035,
             dependencies: [
-                // Add target dependencies here
+                .standards,
+                .incits41986
             ]
         ),
         .testTarget(
@@ -41,4 +45,16 @@ let package = Package(
     swiftLanguageModes: [.v6]
 )
 
-extension String { var tests: Self { self + " Tests" } }
+extension String {
+    var tests: Self { self + " Tests" }
+    var foundation: Self { self + " Foundation" }
+}
+
+for target in package.targets where ![.system, .binary, .plugin].contains(target.type) {
+    let existing = target.swiftSettings ?? []
+    target.swiftSettings = existing + [
+        .enableUpcomingFeature("ExistentialAny"),
+        .enableUpcomingFeature("InternalImportsByDefault"),
+        .enableUpcomingFeature("MemberImportVisibility")
+    ]
+}
