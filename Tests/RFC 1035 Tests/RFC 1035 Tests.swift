@@ -30,7 +30,7 @@ struct `RFC 1035 Domain Tests` {
         let labelStr = "test-label"
         let substring = labelStr.dropLast(6) // "test"
         let label = try RFC_1035.Domain.Label(substring)
-        #expect(label.value == "test")
+        #expect(label == "test")
     }
 
     @Test
@@ -42,13 +42,13 @@ struct `RFC 1035 Domain Tests` {
     @Test
     func `Successfully gets TLD`() throws {
         let domain = try RFC_1035.Domain("example.com")
-        #expect(domain.tld?.value == "com")
+        #expect(domain.tld! == "com")
     }
 
     @Test
     func `Successfully gets SLD`() throws {
         let domain = try RFC_1035.Domain("example.com")
-        #expect(domain.sld?.value == "example")
+        #expect(domain.sld! == "example")
     }
 
     @Test

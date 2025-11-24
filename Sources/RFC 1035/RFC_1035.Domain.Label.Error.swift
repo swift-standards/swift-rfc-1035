@@ -22,7 +22,7 @@ extension RFC_1035.Domain.Label {
     ///
     /// These represent atomic constraint violations at the individual label level,
     /// as defined by RFC 1035 Section 2.3.1.
-    public enum Error: Swift.Error, Equatable {
+    public enum Error: Swift.Error, Sendable, Equatable {
         /// Label is empty
         case empty
 
@@ -30,7 +30,7 @@ extension RFC_1035.Domain.Label {
         case tooLong(_ length: Int, label: String)
 
         /// Label contains invalid characters (must be letters, digits, or hyphens)
-        case invalidCharacters(_ label: String)
+        case invalidCharacters(_ label: String, byte: UInt8, reason: String)
 
         /// Label starts with a hyphen (RFC 1035 violation)
         case startsWithHyphen(_ label: String)
@@ -52,8 +52,8 @@ extension RFC_1035.Domain.Label.Error: CustomStringConvertible {
             return "Domain label cannot be empty"
         case .tooLong(let length, let label):
             return "Domain label '\(label)' is too long (\(length) bytes, maximum 63)"
-        case .invalidCharacters(let label):
-            return "Domain label '\(label)' contains invalid characters (only letters, digits, and hyphens allowed)"
+        case .invalidCharacters(let label, let byte, let reason):
+            return "Domain label '\(label)' has invalid byte 0x\(String(byte, radix: 16)): \(reason)"
         case .startsWithHyphen(let label):
             return "Domain label '\(label)' cannot start with a hyphen"
         case .endsWithHyphen(let label):

@@ -21,7 +21,7 @@ extension RFC_1035.Domain {
     ///
     /// These represent compositional constraint violations at the domain level,
     /// as defined by RFC 1035 Section 2.3.4.
-    public enum Error: Swift.Error, Equatable {
+    public enum Error: Swift.Error, Sendable, Equatable {
         /// Domain has no labels (empty string)
         case empty
 

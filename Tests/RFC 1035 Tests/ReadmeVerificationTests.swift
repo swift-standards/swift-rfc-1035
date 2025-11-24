@@ -37,8 +37,8 @@ struct `README Verification` {
     func `README Line 65-72: Working with domain components`() throws {
         let domain = try RFC_1035.Domain("api.example.com")
 
-        #expect(domain.tld?.value == "com")
-        #expect(domain.sld?.value == "example")
+        #expect(domain.tld! == "com")
+        #expect(domain.sld! == "example")
         #expect(domain.name == "api.example.com")
     }
 

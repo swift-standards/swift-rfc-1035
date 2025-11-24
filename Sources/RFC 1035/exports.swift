@@ -1,0 +1,8 @@
+//
+//  exports.swift
+//  swift-rfc-1035
+//
+//  Created by Coen ten Thije Boonkkamp on 24/11/2025.
+//
+
+@_exported public import INCITS_4_1986

@@ -1,74 +1,202 @@
 //
-//  File.swift
+//  RFC_1035.Domain.Label.swift
 //  swift-rfc-1035
 //
 //  Created by Coen ten Thije Boonkkamp on 20/11/2025.
 //
 
-import Standards
+public import INCITS_4_1986
 
 extension RFC_1035.Domain {
-    /// A type-safe domain label that enforces RFC 1035 rules
-    public struct Label: Hashable, Sendable {
-        /// Canonical byte storage (ASCII-only per RFC 1035)
-        let _value: [UInt8]
+    /// RFC 1035 compliant domain label
+    ///
+    /// Represents a single label within a domain name as defined by RFC 1035 Section 2.3.1.
+    /// Labels are case-insensitive ASCII strings with strict character restrictions.
+    ///
+    /// ## RFC 1035 Constraints
+    ///
+    /// Per RFC 1035 Section 2.3.1:
+    /// - Must be 1-63 octets long
+    /// - Must start with a letter (a-z, A-Z)
+    /// - Must end with a letter or digit
+    /// - May contain letters, digits, and hyphens in interior positions
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let label = try RFC_1035.Domain.Label("example")
+    /// let invalid = try RFC_1035.Domain.Label("123") // Throws: must start with letter
+    /// ```
+    ///
+    /// ## RFC Reference
+    ///
+    /// From RFC 1035 Section 2.3.1:
+    ///
+    /// > labels must follow the rules for ARPANET host names. They must
+    /// > start with a letter, end with a letter or digit, and have as interior
+    /// > characters only letters, digits, and hyphen.
+    public struct Label: Sendable, Codable {
+        /// The label value
+        public let rawValue: String
 
-        /// Initialize a label from a string, validating RFC 1035 rules
+        /// Creates a label WITHOUT validation
         ///
-        /// This is the canonical initializer that performs validation.
-        public init(_ string: some StringProtocol) throws(Error) {
-            // Check emptiness
-            guard !string.isEmpty else {
-                throw Error.empty
-            }
-
-            // Check length
-            guard string.count <= RFC_1035.Domain.Limits.maxLabelLength else {
-                throw Error.tooLong(string.count, label: String(string))
-            }
-
-            // Convert to String once for validation and error messages
-            let stringValue = String(string)
-
-            // RFC 1035: Label must match pattern [a-zA-Z](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?
-            guard (try? RFC_1035.Domain.labelRegex.wholeMatch(in: stringValue)) != nil else {
-                // Provide more specific error
-                if string.first == "-" {
-                    throw Error.startsWithHyphen(stringValue)
-                } else if string.last == "-" {
-                    throw Error.endsWithHyphen(stringValue)
-                } else if string.first?.isNumber == true {
-                    throw Error.startsWithDigit(stringValue)
-                } else {
-                    throw Error.invalidCharacters(stringValue)
-                }
-            }
-
-            // Store as canonical byte representation (ASCII-only)
-            self._value = [UInt8](utf8: string)
+        /// **Warning**: Bypasses RFC 1035 validation.
+        /// Only use with compile-time constants or pre-validated values.
+        ///
+        /// - Parameters:
+        ///   - unchecked: Void parameter to prevent accidental use
+        ///   - rawValue: The raw label value (unchecked)
+        init(
+            __unchecked: Void,
+            rawValue: String
+        ) {
+            self.rawValue = rawValue
         }
     }
 }
 
-extension RFC_1035.Domain.Label {
-    /// String representation derived from canonical bytes
-    public var value: String {
-        String(self)
+// MARK: - Hashable
+
+extension RFC_1035.Domain.Label: Hashable {
+    /// Hash value (case-insensitive per RFC 1035)
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(rawValue.lowercased())
+    }
+
+    /// Equality comparison (case-insensitive per RFC 1035)
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.rawValue.lowercased() == rhs.rawValue.lowercased()
+    }
+
+    /// Equality comparison with raw value (case-insensitive)
+    public static func == (lhs: Self, rhs: Self.RawValue) -> Bool {
+        lhs.rawValue.lowercased() == rhs.lowercased()
     }
 }
 
-// MARK: - Convenience Initializers
-extension RFC_1035.Domain.Label {
-    /// Initialize a label from bytes, validating RFC 1035 rules
+// MARK: - Serializing
+
+extension RFC_1035.Domain.Label: UInt8.ASCII.Serializing {
+    public static let serialize: @Sendable (Self) -> [UInt8] = [UInt8].init
+
+    /// Parses a domain label from canonical byte representation (CANONICAL PRIMITIVE)
     ///
-    /// Convenience initializer that decodes bytes as UTF-8 and validates.
-    public init(_ bytes: [UInt8]) throws(Error) {
-        // Decode bytes as UTF-8 and validate
-        let string = String(decoding: bytes, as: UTF8.self)
-        try self.init(string)
+    /// This is the primitive parser that works at the byte level.
+    /// RFC 1035 domain labels are ASCII-only.
+    ///
+    /// ## RFC 1035 Compliance
+    ///
+    /// Per RFC 1035 Section 2.3.1:
+    /// - Labels must be 1-63 octets
+    /// - Must start with a letter (a-z, A-Z)
+    /// - Must end with a letter or digit
+    /// - May contain letters, digits, and hyphens
+    ///
+    /// ## Category Theory
+    ///
+    /// This is the fundamental parsing transformation:
+    /// - **Domain**: [UInt8] (ASCII bytes)
+    /// - **Codomain**: RFC_1035.Domain.Label (structured data)
+    ///
+    /// String-based parsing is derived as composition:
+    /// ```
+    /// String → [UInt8] (UTF-8 bytes) → Domain.Label
+    /// ```
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let bytes = Array("example".utf8)
+    /// let label = try RFC_1035.Domain.Label(ascii: bytes)
+    /// ```
+    ///
+    /// - Parameter bytes: The ASCII byte representation of the label
+    /// - Throws: `RFC_1035.Domain.Label.Error` if the bytes are malformed
+    public init(ascii bytes: [UInt8]) throws(Error) {
+        // Empty check
+        guard !bytes.isEmpty else {
+            throw Error.empty
+        }
+
+        // Length check (RFC 1035: max 63 octets)
+        guard bytes.count <= RFC_1035.Domain.Limits.maxLabelLength else {
+            let string = String(decoding: bytes, as: UTF8.self)
+            throw Error.tooLong(bytes.count, label: string)
+        }
+
+        let firstByte = bytes.first!
+        let lastByte = bytes.last!
+
+        // Must start with a letter (RFC 1035)
+        guard firstByte.ascii.isLetter else {
+            let string = String(decoding: bytes, as: UTF8.self)
+            if firstByte == .ascii.hyphen {
+                throw Error.startsWithHyphen(string)
+            } else if firstByte.ascii.isDigit {
+                throw Error.startsWithDigit(string)
+            } else {
+                throw Error.invalidCharacters(string, byte: firstByte, reason: "Must start with a letter")
+            }
+        }
+
+        // Must end with a letter or digit (RFC 1035)
+        guard lastByte.ascii.isLetter || lastByte.ascii.isDigit else {
+            let string = String(decoding: bytes, as: UTF8.self)
+            if lastByte == .ascii.hyphen {
+                throw Error.endsWithHyphen(string)
+            } else {
+                throw Error.invalidCharacters(string, byte: lastByte, reason: "Must end with a letter or digit")
+            }
+        }
+
+        // Interior characters: letters, digits, and hyphens only
+        for byte in bytes {
+            let valid = byte.ascii.isLetter || byte.ascii.isDigit || byte == .ascii.hyphen
+            guard valid else {
+                let string = String(decoding: bytes, as: UTF8.self)
+                throw Error.invalidCharacters(string, byte: byte, reason: "Only letters, digits, and hyphens allowed")
+            }
+        }
+
+        self.init(__unchecked: (), rawValue: String(decoding: bytes, as: UTF8.self))
     }
 }
 
-extension RFC_1035.Domain.Label: CustomStringConvertible {
-    public var description: String { String(self) }
+// MARK: - Byte Serialization
+
+extension [UInt8] {
+    /// Creates ASCII byte representation of an RFC 1035 domain label
+    ///
+    /// This is the canonical serialization of domain labels to bytes.
+    /// RFC 1035 domain labels are ASCII-only by definition.
+    ///
+    /// ## Category Theory
+    ///
+    /// This is the most universal serialization (natural transformation):
+    /// - **Domain**: RFC_1035.Domain.Label (structured data)
+    /// - **Codomain**: [UInt8] (ASCII bytes)
+    ///
+    /// String representation is derived as composition:
+    /// ```
+    /// Domain.Label → [UInt8] (ASCII) → String (UTF-8 interpretation)
+    /// ```
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let label = try RFC_1035.Domain.Label("example")
+    /// let bytes = [UInt8](label)
+    /// // bytes == "example" as ASCII bytes
+    /// ```
+    ///
+    /// - Parameter label: The domain label to serialize
+    public init(_ label: RFC_1035.Domain.Label) {
+        self = Array(label.rawValue.utf8)
+    }
 }
+
+// MARK: - Protocol Conformances
+
+extension RFC_1035.Domain.Label: RawRepresentable {}
+extension RFC_1035.Domain.Label: CustomStringConvertible {}
