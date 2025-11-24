@@ -44,10 +44,9 @@ extension RFC_1035.Domain {
     ///
     /// Convenience initializer that validates strings as labels, then delegates
     /// to the canonical `init(labels: [Label])`.
-    public init(labels labelStrings: [String]) throws(Error) {
+    public init(labels labelStrings: some Sequence<some StringProtocol>) throws(Error) {
         // Validate and convert each label, wrapping Label.Error
         var validatedLabels: [Label] = []
-        validatedLabels.reserveCapacity(labelStrings.count)
         for labelString in labelStrings {
             do {
                 validatedLabels.append(try Label(labelString))
@@ -64,9 +63,9 @@ extension RFC_1035.Domain {
     /// Initialize from a string representation (e.g. "example.com")
     ///
     /// Convenience initializer that parses dot-separated labels.
-    public init(_ string: String) throws(Error) {
+    public init(_ string: some StringProtocol) throws(Error) {
         try self.init(
-            labels: string.split(separator: ".", omittingEmptySubsequences: true).map(String.init)
+            labels: string.split(separator: ".", omittingEmptySubsequences: true)
         )
     }
 
@@ -83,7 +82,7 @@ extension RFC_1035.Domain {
 extension RFC_1035.Domain {
     /// The complete domain name as a string
     public var name: String {
-        labels.map(String.init).joined(separator: ".")
+        labels.map(\.description).joined(separator: ".")
     }
     
     /// The top-level domain (rightmost label)
@@ -106,7 +105,7 @@ extension RFC_1035.Domain {
     
     /// Creates a subdomain by prepending new labels
     public func addingSubdomain(_ components: [String]) throws(Error) -> RFC_1035.Domain {
-        try RFC_1035.Domain(labels: components + labels.map(String.init))
+        try RFC_1035.Domain(labels: components + labels.map{String.init($0)  })
     }
 
     public func addingSubdomain(_ components: String...) throws(Error) -> RFC_1035.Domain {
