@@ -48,7 +48,7 @@ extension RFC_1035.Domain {
         ///   - unchecked: Void parameter to prevent accidental use
         ///   - rawValue: The raw label value (unchecked)
         init(
-            __unchecked: Void,
+            __unchecked _: Void,
             rawValue: String
         ) {
             self.rawValue = rawValue
@@ -113,22 +113,35 @@ extension RFC_1035.Domain.Label: UInt8.ASCII.Serializing {
     ///
     /// - Parameter bytes: The ASCII byte representation of the label
     /// - Throws: `RFC_1035.Domain.Label.Error` if the bytes are malformed
-    public init(ascii bytes: [UInt8]) throws(Error) {
-        // Empty check
-        guard !bytes.isEmpty else {
+    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
+    where Bytes.Element == UInt8 {
+        guard let firstByte = bytes.first else {
             throw Error.empty
         }
 
-        // Length check (RFC 1035: max 63 octets)
-        guard bytes.count <= RFC_1035.Domain.Limits.maxLabelLength else {
-            let string = String(decoding: bytes, as: UTF8.self)
-            throw Error.tooLong(bytes.count, label: string)
+        var count = 0
+        var lastByte = firstByte
+
+        for byte in bytes {
+            count += 1
+            lastByte = byte
+
+            let validInterior = byte.ascii.isLetter || byte.ascii.isDigit || byte == .ascii.hyphen
+            guard validInterior else {
+                let string = String(decoding: bytes, as: UTF8.self)
+                throw Error.invalidCharacters(
+                    string,
+                    byte: byte,
+                    reason: "Only letters, digits, and hyphens allowed"
+                )
+            }
         }
 
-        let firstByte = bytes.first!
-        let lastByte = bytes.last!
+        guard count <= RFC_1035.Domain.Limits.maxLabelLength else {
+            let string = String(decoding: bytes, as: UTF8.self)
+            throw Error.tooLong(count, label: string)
+        }
 
-        // Must start with a letter (RFC 1035)
         guard firstByte.ascii.isLetter else {
             let string = String(decoding: bytes, as: UTF8.self)
             if firstByte == .ascii.hyphen {
@@ -136,26 +149,24 @@ extension RFC_1035.Domain.Label: UInt8.ASCII.Serializing {
             } else if firstByte.ascii.isDigit {
                 throw Error.startsWithDigit(string)
             } else {
-                throw Error.invalidCharacters(string, byte: firstByte, reason: "Must start with a letter")
+                throw Error.invalidCharacters(
+                    string,
+                    byte: firstByte,
+                    reason: "Must start with a letter"
+                )
             }
         }
 
-        // Must end with a letter or digit (RFC 1035)
         guard lastByte.ascii.isLetter || lastByte.ascii.isDigit else {
             let string = String(decoding: bytes, as: UTF8.self)
             if lastByte == .ascii.hyphen {
                 throw Error.endsWithHyphen(string)
             } else {
-                throw Error.invalidCharacters(string, byte: lastByte, reason: "Must end with a letter or digit")
-            }
-        }
-
-        // Interior characters: letters, digits, and hyphens only
-        for byte in bytes {
-            let valid = byte.ascii.isLetter || byte.ascii.isDigit || byte == .ascii.hyphen
-            guard valid else {
-                let string = String(decoding: bytes, as: UTF8.self)
-                throw Error.invalidCharacters(string, byte: byte, reason: "Only letters, digits, and hyphens allowed")
+                throw Error.invalidCharacters(
+                    string,
+                    byte: lastByte,
+                    reason: "Must end with a letter or digit"
+                )
             }
         }
 
@@ -198,5 +209,5 @@ extension [UInt8] {
 
 // MARK: - Protocol Conformances
 
-extension RFC_1035.Domain.Label: RawRepresentable {}
+extension RFC_1035.Domain.Label: UInt8.ASCII.RawRepresentable {}
 extension RFC_1035.Domain.Label: CustomStringConvertible {}

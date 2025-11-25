@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  RFC 1035 Tests.swift
 //  swift-web
 //
 //  Created by Coen ten Thije Boonkkamp on 28/12/2024.
@@ -20,7 +20,7 @@ struct `RFC 1035 Domain Tests` {
     @Test
     func `Successfully creates domain from Substring`() throws {
         let fullString = "www.example.com"
-        let substring = fullString.dropFirst(4) // "example.com"
+        let substring = fullString.dropFirst(4)  // "example.com"
         let domain = try RFC_1035.Domain(substring)
         #expect(domain.name == "example.com")
     }
@@ -28,7 +28,7 @@ struct `RFC 1035 Domain Tests` {
     @Test
     func `Successfully creates label from Substring`() throws {
         let labelStr = "test-label"
-        let substring = labelStr.dropLast(6) // "test"
+        let substring = labelStr.dropLast(6)  // "test"
         let label = try RFC_1035.Domain.Label(substring)
         #expect(label == "test")
     }

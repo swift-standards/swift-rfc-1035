@@ -5,13 +5,12 @@
 //  Verifies that README code examples actually work
 //
 
+import Foundation
 import RFC_1035
 import Testing
-import Foundation
 
 @Suite
 struct `README Verification` {
-
     @Test
     func `README Line 51-52: Create from string`() throws {
         let domain = try RFC_1035.Domain("example.com")

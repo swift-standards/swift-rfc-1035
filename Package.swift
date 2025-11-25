@@ -18,21 +18,21 @@ let package = Package(
         .macOS(.v15),
         .iOS(.v18),
         .tvOS(.v18),
-        .watchOS(.v11)
+        .watchOS(.v11),
     ],
     products: [
-        .library(name: .rfc1035, targets: [.rfc1035]),
+        .library(name: .rfc1035, targets: [.rfc1035])
     ],
     dependencies: [
         .package(url: "https://github.com/swift-standards/swift-standards.git", from: "0.1.0"),
-        .package(url: "https://github.com/swift-standards/swift-incits-4-1986.git", from: "0.3.0"),
+        .package(url: "https://github.com/swift-standards/swift-incits-4-1986.git", from: "0.4.0"),
     ],
     targets: [
         .target(
             name: .rfc1035,
             dependencies: [
                 .standards,
-                .incits41986
+                .incits41986,
             ]
         ),
         .testTarget(
@@ -52,9 +52,10 @@ extension String {
 
 for target in package.targets where ![.system, .binary, .plugin].contains(target.type) {
     let existing = target.swiftSettings ?? []
-    target.swiftSettings = existing + [
-        .enableUpcomingFeature("ExistentialAny"),
-        .enableUpcomingFeature("InternalImportsByDefault"),
-        .enableUpcomingFeature("MemberImportVisibility")
-    ]
+    target.swiftSettings =
+        existing + [
+            .enableUpcomingFeature("ExistentialAny"),
+            .enableUpcomingFeature("InternalImportsByDefault"),
+            .enableUpcomingFeature("MemberImportVisibility"),
+        ]
 }

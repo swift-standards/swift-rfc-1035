@@ -53,7 +53,8 @@ extension RFC_1035.Domain.Label.Error: CustomStringConvertible {
         case .tooLong(let length, let label):
             return "Domain label '\(label)' is too long (\(length) bytes, maximum 63)"
         case .invalidCharacters(let label, let byte, let reason):
-            return "Domain label '\(label)' has invalid byte 0x\(String(byte, radix: 16)): \(reason)"
+            return
+                "Domain label '\(label)' has invalid byte 0x\(String(byte, radix: 16)): \(reason)"
         case .startsWithHyphen(let label):
             return "Domain label '\(label)' cannot start with a hyphen"
         case .endsWithHyphen(let label):

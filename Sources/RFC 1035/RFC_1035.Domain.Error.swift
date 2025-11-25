@@ -16,6 +16,7 @@
 // Domain-level validation errors
 
 // MARK: - Errors
+
 extension RFC_1035.Domain {
     /// Errors that can occur during domain validation
     ///

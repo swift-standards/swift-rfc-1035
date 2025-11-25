@@ -51,7 +51,7 @@ extension RFC_1035 {
         ///   - rawValue: The raw domain name (unchecked)
         ///   - labels: Pre-validated labels
         init(
-            __unchecked: Void,
+            __unchecked _: Void,
             rawValue: String,
             labels: [RFC_1035.Domain.Label]
         ) {
@@ -117,7 +117,7 @@ extension RFC_1035.Domain: UInt8.ASCII.Serializing {
     ///
     /// - Parameter bytes: The ASCII byte representation of the domain
     /// - Throws: `RFC_1035.Domain.Error` if the bytes are malformed
-    public init(ascii bytes: [UInt8]) throws(Error) {
+    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error) where Bytes.Element == UInt8 {
         // Empty check
         guard !bytes.isEmpty else {
             throw Error.empty
@@ -131,26 +131,29 @@ extension RFC_1035.Domain: UInt8.ASCII.Serializing {
         // Split on dots (0x2E) and parse each label
         var labels: [RFC_1035.Domain.Label] = []
         var currentStart = bytes.startIndex
+        var currentIndex = bytes.startIndex
 
-        for (index, byte) in bytes.enumerated() {
-            if byte == .ascii.period {
-                let labelBytes = Array(bytes[currentStart..<index])
-                if !labelBytes.isEmpty {
+        while currentIndex < bytes.endIndex {
+            if bytes[currentIndex] == .ascii.period {
+                // Found a dot - extract label
+                if currentStart < currentIndex {
+                    let labelBytes = bytes[currentStart..<currentIndex]
                     do {
-                        labels.append(try RFC_1035.Domain.Label(ascii: labelBytes))
+                        try labels.append(RFC_1035.Domain.Label(ascii: labelBytes))
                     } catch {
                         throw Error.invalidLabel(error)
                     }
                 }
-                currentStart = bytes.index(after: index)
+                currentStart = bytes.index(after: currentIndex)
             }
+            currentIndex = bytes.index(after: currentIndex)
         }
 
         // Handle final label (after last dot or entire string if no dots)
         if currentStart < bytes.endIndex {
-            let labelBytes = Array(bytes[currentStart...])
+            let labelBytes = bytes[currentStart...]
             do {
-                labels.append(try RFC_1035.Domain.Label(ascii: labelBytes))
+                try labels.append(RFC_1035.Domain.Label(ascii: labelBytes))
             } catch {
                 throw Error.invalidLabel(error)
             }
@@ -200,13 +203,13 @@ extension [UInt8] {
     ///
     /// - Parameter domain: The domain name to serialize
     public init(_ domain: RFC_1035.Domain) {
-        self = Array(domain.rawValue.utf8)
+        self = Self(domain.rawValue.utf8)
     }
 }
 
 // MARK: - Protocol Conformances
 
-extension RFC_1035.Domain: RawRepresentable {}
+extension RFC_1035.Domain: UInt8.ASCII.RawRepresentable {}
 extension RFC_1035.Domain: CustomStringConvertible {}
 
 // MARK: - Domain Properties
@@ -242,7 +245,7 @@ extension RFC_1035.Domain {
         var newLabels: [Label] = []
         for component in components {
             do {
-                newLabels.append(try Label(component))
+                try newLabels.append(Label(component))
             } catch {
                 throw Error.invalidLabel(error)
             }
@@ -263,7 +266,7 @@ extension RFC_1035.Domain {
 
     /// Creates a subdomain by prepending new labels
     public func addingSubdomain(_ components: String...) throws(Error) -> RFC_1035.Domain {
-        try self.addingSubdomain(components)
+        try addingSubdomain(components)
     }
 
     /// Returns the parent domain by removing the leftmost label
@@ -311,7 +314,7 @@ extension RFC_1035.Domain {
         var validatedLabels: [Label] = []
         for labelString in labelStrings {
             do {
-                validatedLabels.append(try Label(labelString))
+                try validatedLabels.append(Label(labelString))
             } catch {
                 throw Error.invalidLabel(error)
             }
