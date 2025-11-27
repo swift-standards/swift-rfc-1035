@@ -80,9 +80,9 @@ extension RFC_1035.Domain: Hashable {
     }
 }
 
-// MARK: - Serializing
+// MARK: - Serializable
 
-extension RFC_1035.Domain: UInt8.ASCII.Serializing {
+extension RFC_1035.Domain: UInt8.ASCII.Serializable {
     public static let serialize: @Sendable (Self) -> [UInt8] = [UInt8].init
 
     /// Parses a domain name from canonical byte representation (CANONICAL PRIMITIVE)
