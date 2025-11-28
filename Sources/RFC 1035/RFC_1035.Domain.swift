@@ -80,11 +80,11 @@ extension RFC_1035.Domain: Hashable {
     }
 }
 
-// MARK: - Serializable
+extension RFC_1035.Domain: UInt8.ASCII.RawRepresentable {}
+
+extension RFC_1035.Domain: CustomStringConvertible {}
 
 extension RFC_1035.Domain: UInt8.ASCII.Serializable {
-    public static let serialize: @Sendable (Self) -> [UInt8] = [UInt8].init
-
     /// Parses a domain name from canonical byte representation (CANONICAL PRIMITIVE)
     ///
     /// This is the primitive parser that works at the byte level.
@@ -170,49 +170,13 @@ extension RFC_1035.Domain: UInt8.ASCII.Serializable {
         }
 
         let rawValue = String(decoding: bytes, as: UTF8.self)
-        self.init(__unchecked: (), rawValue: rawValue, labels: labels)
+        self.init(
+            __unchecked: (),
+            rawValue: rawValue,
+            labels: labels
+        )
     }
 }
-
-// MARK: - Byte Serialization
-
-extension [UInt8] {
-    /// Creates ASCII byte representation of an RFC 1035 domain name
-    ///
-    /// This is the canonical serialization of domain names to bytes.
-    /// The format is labels joined by dots (ASCII 0x2E).
-    ///
-    /// ## Category Theory
-    ///
-    /// This is the most universal serialization (natural transformation):
-    /// - **Domain**: RFC_1035.Domain (structured data)
-    /// - **Codomain**: [UInt8] (ASCII bytes)
-    ///
-    /// String representation is derived as composition:
-    /// ```
-    /// Domain → [UInt8] (ASCII) → String (UTF-8 interpretation)
-    /// ```
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let domain = try RFC_1035.Domain("www.example.com")
-    /// let bytes = [UInt8](domain)
-    /// // bytes == "www.example.com" as ASCII bytes
-    /// ```
-    ///
-    /// - Parameter domain: The domain name to serialize
-    public init(_ domain: RFC_1035.Domain) {
-        self = Self(domain.rawValue.utf8)
-    }
-}
-
-// MARK: - Protocol Conformances
-
-extension RFC_1035.Domain: UInt8.ASCII.RawRepresentable {}
-extension RFC_1035.Domain: CustomStringConvertible {}
-
-// MARK: - Domain Properties
 
 extension RFC_1035.Domain {
     /// The complete domain name as a string
@@ -230,8 +194,6 @@ extension RFC_1035.Domain {
         labels.dropLast().last
     }
 }
-
-// MARK: - Domain Operations
 
 extension RFC_1035.Domain {
     /// Returns true if this is a subdomain of the given domain
@@ -330,15 +292,5 @@ extension RFC_1035.Domain {
     /// Creates a subdomain with components in most-to-least significant order
     public static func subdomain(_ components: String...) throws(Error) -> RFC_1035.Domain {
         try RFC_1035.Domain(labels: components.reversed())
-    }
-}
-
-// MARK: - Constants and Validation
-
-extension RFC_1035.Domain {
-    package enum Limits {
-        static let maxLength = 255
-        static let maxLabels = 127
-        static let maxLabelLength = 63
     }
 }
