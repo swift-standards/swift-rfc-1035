@@ -85,6 +85,13 @@ extension RFC_1035.Domain.Label: UInt8.ASCII.RawRepresentable {}
 extension RFC_1035.Domain.Label: CustomStringConvertible {}
 
 extension RFC_1035.Domain.Label: UInt8.ASCII.Serializable {
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        ascii label: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == UInt8 {
+        buffer.append(contentsOf: label.rawValue.utf8)
+    }
+
     /// Parses a domain label from canonical byte representation (CANONICAL PRIMITIVE)
     ///
     /// This is the primitive parser that works at the byte level.

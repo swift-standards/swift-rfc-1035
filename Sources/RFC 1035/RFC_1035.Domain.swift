@@ -85,6 +85,13 @@ extension RFC_1035.Domain: UInt8.ASCII.RawRepresentable {}
 extension RFC_1035.Domain: CustomStringConvertible {}
 
 extension RFC_1035.Domain: UInt8.ASCII.Serializable {
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        ascii domain: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == UInt8 {
+        buffer.append(contentsOf: domain.rawValue.utf8)
+    }
+
     /// Parses a domain name from canonical byte representation (CANONICAL PRIMITIVE)
     ///
     /// This is the primitive parser that works at the byte level.
