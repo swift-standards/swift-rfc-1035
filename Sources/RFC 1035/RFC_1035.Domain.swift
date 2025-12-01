@@ -124,7 +124,8 @@ extension RFC_1035.Domain: UInt8.ASCII.Serializable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the domain
     /// - Throws: `RFC_1035.Domain.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error) where Bytes.Element == UInt8 {
+    public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
+    where Bytes.Element == UInt8 {
         // Empty check
         guard !bytes.isEmpty else {
             throw Error.empty

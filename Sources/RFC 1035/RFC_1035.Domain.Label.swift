@@ -73,7 +73,7 @@ extension RFC_1035.Domain.Label: Hashable {
     public static func == (lhs: Self, rhs: Self.RawValue) -> Bool {
         lhs.rawValue.lowercased() == rhs.lowercased()
     }
-    
+
     /// Equality comparison with raw value (case-insensitive)
     public static func == (lhs: Self.RawValue, rhs: Self) -> Bool {
         lhs.lowercased() == rhs.rawValue.lowercased()
