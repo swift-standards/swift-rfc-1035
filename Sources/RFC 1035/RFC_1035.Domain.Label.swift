@@ -80,11 +80,11 @@ extension RFC_1035.Domain.Label: Hashable {
     }
 }
 
-extension RFC_1035.Domain.Label: UInt8.ASCII.RawRepresentable {}
+extension RFC_1035.Domain.Label: Binary.ASCII.RawRepresentable {}
 
 extension RFC_1035.Domain.Label: CustomStringConvertible {}
 
-extension RFC_1035.Domain.Label: UInt8.ASCII.Serializable {
+extension RFC_1035.Domain.Label: Binary.ASCII.Serializable {
     public static func serialize<Buffer: RangeReplaceableCollection>(
         ascii label: Self,
         into buffer: inout Buffer
