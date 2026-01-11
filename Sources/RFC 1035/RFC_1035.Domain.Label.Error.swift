@@ -15,7 +15,7 @@
 //
 // Label-level validation errors
 
-import Standards
+import Standard_Library_Extensions
 
 extension RFC_1035.Domain.Label {
     /// Errors that can occur during label validation
