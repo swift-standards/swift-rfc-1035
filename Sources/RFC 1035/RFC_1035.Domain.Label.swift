@@ -5,7 +5,7 @@
 //  Created by Coen ten Thije Boonkkamp on 20/11/2025.
 //
 
-public import INCITS_4_1986
+public import ASCII
 
 extension RFC_1035.Domain {
     /// RFC 1035 compliant domain label
