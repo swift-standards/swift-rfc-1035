@@ -280,10 +280,11 @@ extension RFC_1035.Domain {
     }
 
     /// Initialize with an array of string labels
-    public init(labels labelStrings: some Sequence<some StringProtocol>) throws(Error) {
+    public init<S: Swift.Sequence>(labels labelStrings: S) throws(Error)
+    where S.Element: StringProtocol {
         var validatedLabels: [Label] = []
         for labelString in labelStrings {
-            do {
+            do throws(Label.Error) {
                 try validatedLabels.append(Label(labelString))
             } catch {
                 throw Error.invalidLabel(error)
