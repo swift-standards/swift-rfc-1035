@@ -38,7 +38,13 @@ let package = Package(
                 .binary,
                 .incits41986
             ]
-        )
+        ),
+        .testTarget(
+            name: "RFC 1035 Tests",
+            dependencies: [
+                "RFC 1035",
+            ]
+        ),
     ],
     swiftLanguageModes: [.v6]
 )
@@ -54,6 +60,7 @@ for target in package.targets where ![.system, .binary, .plugin, .macro].contain
         .enableUpcomingFeature("ExistentialAny"),
         .enableUpcomingFeature("InternalImportsByDefault"),
         .enableUpcomingFeature("MemberImportVisibility"),
+        .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
         .enableExperimentalFeature("Lifetimes"),
         .enableExperimentalFeature("SuppressedAssociatedTypes"),
         .enableExperimentalFeature("SuppressedAssociatedTypesWithDefaults"),
